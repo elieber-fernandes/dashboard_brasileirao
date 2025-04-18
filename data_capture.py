@@ -1,7 +1,7 @@
 import os
-import requests
+import requests # type: ignore
 import csv
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 
 # Carregar variáveis de ambiente
 load_dotenv()
