@@ -74,5 +74,43 @@ try:
     maior_goleada = jogos.loc[jogos['Diff'].idxmax()]
     st.markdown(f"**Maior goleada:** {maior_goleada['Home Team']} {maior_goleada['Score']} {maior_goleada['Away Team']} em {maior_goleada['Date']}")
 
+    # Gráfico de desempenho por rodada
+    st.subheader(f"Desempenho do {time_selecionado} por rodada")
+    jogos_time['Rodada'] = range(1, len(jogos_time) + 1)
+    jogos_time['Pontos'] = jogos_time.apply(
+        lambda row: 3 if row['Home Team'] == time_selecionado and int(row['Score'].split('-')[0]) > int(row['Score'].split('-')[1]) else
+                    3 if row['Away Team'] == time_selecionado and int(row['Score'].split('-')[1]) > int(row['Score'].split('-')[0]) else
+                    1 if int(row['Score'].split('-')[0]) == int(row['Score'].split('-')[1]) else 0, axis=1)
+
+    fig_desempenho, ax_desempenho = plt.subplots()
+    ax_desempenho.plot(jogos_time['Rodada'], jogos_time['Pontos'], marker='o', color='blue')
+    ax_desempenho.set_title(f"Desempenho do {time_selecionado} por rodada")
+    ax_desempenho.set_xlabel("Rodada")
+    ax_desempenho.set_ylabel("Pontos")
+    st.pyplot(fig_desempenho)
+
+    # Comparação entre dois times
+    st.sidebar.header("Comparação entre times")
+    time1 = st.sidebar.selectbox("Selecione o primeiro time", options=times)
+    time2 = st.sidebar.selectbox("Selecione o segundo time", options=times)
+
+    st.subheader(f"Comparação entre {time1} e {time2}")
+    time1_stats = classificacao[classificacao['Time'] == time1].iloc[0]
+    time2_stats = classificacao[classificacao['Time'] == time2].iloc[0]
+
+    comparacao = pd.DataFrame({
+        'Estatística': ['Pontos', 'Vitórias', 'Empates', 'Derrotas', 'Saldo de Gols'],
+        time1: [time1_stats['Pontos'], time1_stats['Vitórias'], time1_stats['Empates'], time1_stats['Derrotas'], time1_stats['Saldo']],
+        time2: [time2_stats['Pontos'], time2_stats['Vitórias'], time2_stats['Empates'], time2_stats['Derrotas'], time2_stats['Saldo']]
+    })
+    st.dataframe(comparacao)
+
+    fig_comparacao, ax_comparacao = plt.subplots()
+    ax_comparacao.bar(comparacao['Estatística'], comparacao[time1], label=time1, alpha=0.7)
+    ax_comparacao.bar(comparacao['Estatística'], comparacao[time2], label=time2, alpha=0.7)
+    ax_comparacao.set_title("Comparação entre times")
+    ax_comparacao.legend()
+    st.pyplot(fig_comparacao)
+
 except FileNotFoundError as e:
     st.error(f"Erro ao carregar os dados: {e}")
